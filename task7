@@ -1,0 +1,36 @@
+ProductNameInput = str(input("Enter the Name of the Product : "))
+ProductName = ProductNameInput.replace(" ", "+")
+ProductNameForDB = ProductNameInput.replace(" ", "")
+
+Products = []
+
+URL = "https://www.flipkart.com/search?q=" + str(ProductName)
+PAGE = requests.get(URL)
+SOUP = BeautifulSoup(PAGE.content, 'html.parser')
+ProductList = SOUP.find_all(class_="_4ddWXP")
+
+
+for Product in ProductList:
+    ProductName = Product.find(class_="s1Q9rs")
+    ProductPrice = Product.find(class_="_30jeq3")
+    List1 = [ProductName.text, ProductPrice.text]
+    Products.append(List1)
+
+for p in Products:
+  print(p)
+
+DB = mysql.connector.connect(
+  username = "root",
+  password = "0000",
+  database = ProductNameForDB
+)
+CURSOR = DB.cursor()
+
+CURSOR.execute("""CREATE TABLE Product (id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,Product_Name VARCHAR(100) NOT NULL,Price VARCHAR(50))""")
+
+for SubList in Products:
+    Product_Name = SubList[0]
+    Price = SubList[1]
+    CURSOR.execute(f"""INSERT INTO contacts (Product_Name, Price)VALUES ('{Product_Name}', '{Price}')""")
+
+CURSOR.execute("SELECT * FROM Products")
